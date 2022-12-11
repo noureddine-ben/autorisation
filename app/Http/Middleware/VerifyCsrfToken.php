@@ -16,7 +16,9 @@ class VerifyCsrfToken extends Middleware
         'ajouter_emploi',
         'editemploi',
         'edit_auto',
-        'ajouter_houraire'
+        'ajouter_houraire',
+        'pointer'
+
         //
     ];
 }

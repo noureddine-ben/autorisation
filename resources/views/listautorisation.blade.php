@@ -30,8 +30,14 @@
         <div class="col">
             <div class="card text-left">
                 <div class="card-body">
+                    <div class="input-group mb-4">
+                        <div class="form-outline">
+                          <input type="search" id="usermpsearch" class="form-control" />
+                        </div>
+                        
+                      </div>
                     <div class="table-responsive">
-                        <table class="table">
+                        <table  id="auto_table" class="table">
                             <thead>
                                 <tr>
                                     <th scope="col">N</th>
@@ -47,7 +53,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($autorisations as $autorisation)
+                                {{-- @foreach ($autorisations as $autorisation)
                                 <tr>
                                     <th scope="row">{{$autorisation['id']}}</th>
                                     <td>{{$autorisation['type_autorisation']}}</td>
@@ -64,7 +70,7 @@
                                     <td></td>
                                     <td><a class="text-success mr-2" href="javascript:void(0)" onclick="getpointage({{$autorisation['id']}})"><i class="text-20 i-Eye"></i></a><a class="text-success mr-2"  data-toggle="modal" data-target=".bd-example-modal-lg" href="javascript:void(0)" onclick="getautorisation({{$autorisation['id']}})"><i class="nav-icon i-Pen-2 font-weight-bold"></i></a><a class="text-danger mr-2" href="#"><i class="nav-icon i-Close-Window font-weight-bold"></i></a></td>
                                 </tr>
-                                @endforeach
+                                @endforeach --}}
                             </tbody>
                         </table>
                     </div>
@@ -399,6 +405,22 @@ $("#date_signature_ordon").val(data.date_signature_ordon);
 });
 }
 ////////////////////////////////////////////////////////////////////////////////////
+function pointer(id,ind){
+    let total =  $("#total_heures"+ind).val();
+    $.ajax(
+    {
+        url: "pointer/",
+        type: 'post',
+        data: {
+            id: id,
+            total:total,
+        },
+        success: function (data){
+            console.log(data);
+        }
+    });
+
+}
 function getemploi(id){
     $.ajax(
     {
@@ -437,7 +459,7 @@ function getpointage(id){
             var f2 = parseInt(emp[index].heure_fin);
             var res = f2 - f1;
 
-                $('#pointage_t tbody').prepend('<tr id="emploi"><td>'+emp[index].id+'</td><td>'+emp[index].jours+'</td><td>'+emp[index].creneau_horaire+'</td><td>'+emp[index].heure_debut+'</td><td>'+emp[index].heure_fin+'</td><td>'+res+'</td><td><a href="javascript:void(0)" onclick="pointer('+emp[index].id+')"><i class="text-20 mr-1 i-CMYK"></i></a><a class="text-success mr-2" href="javascript:void(0)" onclick="getemploi('+emp[index].id+')"><i class="nav-icon i-Pen-2 mr-1 font-weight-bold"></i></a><a href="javascript:void(0)" onclick="deleteemploi('+emp[index].id+')"><i class="nav-icon i-Close-Window font-weight-bold"></i></a></td>  </tr>');
+                $('#pointage_t tbody').prepend('<tr id="emploi"><td>'+emp[index].id+'</td><td>'+emp[index].jours+'</td><td>'+emp[index].creneau_horaire+'</td><td>'+emp[index].heure_debut+'</td><td>'+emp[index].heure_fin+'</td><td><input class="form-control" id="total_heures'+index+'" type="text" placeholder="Total Heures" /></td><td><a href="javascript:void(0)" onclick="pointer('+emp[index].id+','+index+')"><i class="text-20 mr-1 i-CMYK"></i></a><a class="text-success mr-2" href="javascript:void(0)" onclick="getemploi('+emp[index].id+')"><i class="nav-icon i-Pen-2 mr-1 font-weight-bold"></i></a><a href="javascript:void(0)" onclick="deleteemploi('+emp[index].id+')"><i class="nav-icon i-Close-Window font-weight-bold"></i></a></td>  </tr>');
 
 });    
     }
@@ -445,6 +467,38 @@ function getpointage(id){
 
 }
 $(document).ready(function () {
+    //////////////////////////////////////////////////////////////////////////////////////////
+    $("#usermpsearch").keyup(function(){
+    let cne=$("#usermpsearch").val();
+    $('#auto_table tbody').empty();
+
+    $.ajax(
+    {
+        url: "usermpsearch/"+cne,
+        type: 'get',
+        data: {
+            cne: cne,
+        },
+        success: function (data){
+            $('#auto_table tbody').empty();
+
+            $.each(data, function( index, value ) {
+
+                if (data[index].date_signature_sous_ordon === null && data[index].date_signature_ordon == null) {
+                    var  etat = "Encore";
+                    var  type = "warning";
+                    
+                   } else
+                   {
+                    var  etat = "Approuvé"
+                    var  type = "success";
+                   }
+                $('#auto_table tbody').prepend('<tr id="emp'+data[index].id+'"><td>'+data[index].type_autorisation+'</td><td>'+data[index].nom+'</td><td>'+data[index].date_autorisation+'</td><td>'+data[index].annees_univ+'</td><td><span class="badge badge-'+type+'">'+etat+'</span></td><td>'+data[index].type_autorisation+'</td><td>'+data[index].type_autorisation+'</td><td><a class="text-success mr-2" href="javascript:void(0)" onclick="getpointage('+data[index].id+')"><i class="text-20 i-Eye"></i></a><a class="text-success mr-2"  data-toggle="modal" data-target=".bd-example-modal-lg" href="javascript:void(0)" onclick="getautorisation('+data[index].id+')"><i class="nav-icon i-Pen-2 font-weight-bold"></i></a><a class="text-danger mr-2" href="#"><i class="nav-icon i-Close-Window font-weight-bold"></i></a></td></tr>');
+
+});
+        }
+    });
+  });
 
       /////////////////////////////////////////////////////////////////////////////////////////
   $('#editemploiform').submit(function(e) {
@@ -553,13 +607,9 @@ date_signature_sous_ordon,
 etat_sous_ordon
               },
               success: function(data){
-                  console.log(data);
-                  if(data){
-                                 }
-                  else {
-                     alert("Error occured !");
-                  }
-                  
+                    $('#bd-example-modal-lg').modal('hide');
+   
+               
               }
           });
       

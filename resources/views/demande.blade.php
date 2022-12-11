@@ -271,15 +271,27 @@
                     </div>
                     <div class="col form-group">
                         <label for="firstName1">Matiere</label>
-                        <input class="form-control" id="ematiere" type="text" placeholder="Matiere" />
-                    </div>
+                        <select id="matiere" name="matiere" class="form-control">
+                            @foreach ($matiers as $matier)
+                            <option value="{{$matier['id']}}">{{$matier['libelle']}}</option>
+                            @endforeach
+                        </select>   
+                        </div>
                     <div class="col form-group">
                         <label for="firstName1">Type intervention</label>
-                        <input class="form-control" id="etype_intervention" type="text" placeholder="Type intervention	" />
+                        <select id="type_intervention" name="jours" class="form-control">
+                            @foreach ($intervantions as $intervantion)
+                            <option value="{{$intervantion['id']}}">{{$intervantion['libelle']}}</option>
+                            @endforeach
+                        </select>   
                     </div>
                     <div class="col form-group">
                         <label for="firstName1">Type Emploi</label>
-                        <input class="form-control" id="etype_emploi" type="text" placeholder="Type Emploi" />
+                        <select id="type_emploi" name="jours" class="form-control">
+                            @foreach ($emplois as $emploi)
+                            <option value="{{$emploi['id']}}">{{$emploi['type_emploi']}}</option>
+                            @endforeach
+                        </select> 
                     </div>
                     </div>
                 <div class="modal-footer">
@@ -340,7 +352,12 @@
                     </div>
                     <div class="col form-group">
                         <label for="firstName1">Matiere</label>
-                        <input class="form-control" id="ematiere" type="text" placeholder="Matiere" />
+                        <select id="matiere" name="jours" class="form-control">
+                            @foreach ($matiers as $matier)
+                            <option value="{{$matier['libelle']}}">{{$matier['libelle']}}</option>
+                            @endforeach
+                        </select>                       
+
                     </div>
                     <div class="col form-group">
                         <label for="firstName1">Type intervention</label>
@@ -479,6 +496,11 @@ $('#emploiform').submit(function(e) {
         let heure_fin=$("#heure_fin").val();
         let section=$("#section").val();
         let groupe=$("#groupe").val();
+        let matier=$("#matiere").val();
+        let emploi=$("#type_intervention").val();
+        let intervantion=$("#type_emploi").val();
+        
+
        
        
           $.ajax({
@@ -491,7 +513,11 @@ $('#emploiform').submit(function(e) {
                 heure_debut:heure_debut,
                 heure_fin:heure_fin,
                 section:section,
-                groupe:groupe},
+                groupe:groupe,
+                matier:matier,
+                emploi:emploi,
+                intervantion:intervantion,
+            },
 
                 success: function(data1){
                   console.log(data1);
@@ -611,7 +637,6 @@ grade:grade
 
               },
               success: function(data){
-                  console.log(data);
                   if(data){
                     $('#autorisation')[0].reset();
                     $('#referencere').prepend('<div class="alert alert-card alert-success" role="alert"><strong class="text-capitalize">envoyer!</strong> votre référence est '+data.reference+'.<button class="close" type="button" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>') 
@@ -679,7 +704,6 @@ function getemploi(id){
             ref: ref,
         },
         success: function (emp){
-            console.log(emp);
             $.each(emp, function( index, value ) {
                 $('#emploi_table tbody').prepend('<tr id="emp'+emp[index].id+'"><td>'+emp[index].jours+'</td><td>'+emp[index].creneau_horaire+'</td><td>'+emp[index].heure_debut+'</td><td>'+emp[index].heure_fin+'</td><td>'+emp[index].type_intervention+'</td><td>'+emp[index].matieres+'</td><td>'+emp[index].section+'</td><td>'+emp[index].groupe+'</td><td><a class="text-success mr-2" href="javascript:void(0)" onclick="getemploi('+emp[index].id+')"><i class="nav-icon i-Pen-2 font-weight-bold"></i></a><button onclick="deleteemploi('+emp[index].id+')" class="btn btn-secondary" type="button" >delete</button></td></tr>');
 

@@ -20,6 +20,7 @@ use App\Models\Houraire;
 use App\Models\Infoprofessionnele;
 use App\Models\Infopersonnelle;
 use App\Models\Promotion;
+use App\Models\Pointage;
 
 
 class Controller extends BaseController
@@ -33,8 +34,7 @@ class Controller extends BaseController
 
     public function ajouterautorisation(Request $request){
 
-        // $user = User::find(Auth::id());
-        // $autorisations=$user->autorisations;
+        $user = User::find(Auth::id());
         /////////////////////Infopersonnelle////////////////////////
                  $data1= new Infopersonnelle();
                  $data1['cine']=$request->cine;
@@ -82,13 +82,13 @@ class Controller extends BaseController
         $data->save();
         
      
-        return response()->json($autorisations);
+        return response()->json($data);
             }
      public function editautorisation(Request $request){
 
 
 
-                $data = Autorisation::where('reference',$request->Ref)->first();
+            $data = Autorisation::where('reference',$request->Ref)->first();
             $data['reference']=$request->Ref;
             $data['date_autorisation']=$request->date_autorisation;
             $data['type_autorisation']=$request->type_autorisation;
@@ -106,9 +106,14 @@ class Controller extends BaseController
             $data['date_debut']=$request->date_debut;
             $data['date_fin']=$request->date_fin;
             $data['annees_univ']=$request->annees_univ;
+            $data['date_signature_ordon']=$request->date_signature_ordon;
+            $data['etat_sous_ordon']=$request->etat_sous_ordon;
             $data['periode']=$request->periode;
-            
+            $data['date_signature_ordon']=$request->date_signature_ordon;
+            $data['etat_ordon']=$request->etat_ordon;
             $data->update();
+            return response()->json("success");
+
             }
 public function getautorisation($id){
                 $data = Autorisation::find($id);
@@ -117,7 +122,7 @@ public function getautorisation($id){
 public function ajouteremploi(Request $request){
     $autorisation = Autorisation::where('reference',$request->Ref)->first();
     $user = User::find(Auth::id());
-    $autorisations=$user->autorisations;
+    // $autorisations=$user->autorisations;
 
 
     $begin = new DateTime( $autorisation['date_debut'] );
@@ -133,20 +138,51 @@ public function ajouteremploi(Request $request){
                 $data1['section']=$request->section;
                 $data1['groupe']=$request->groupe;
                 $data1['autorisation_id']=$autorisation['id'];
-                $data1['type_emplois']=1;
-                $data1['type_intervention']=1;
-                $data1['matieres']=1;
+                $data1['type_emplois']=$request->emploi;
+                $data1['type_intervention']=$request->intervantion;
+                $data1['matieres']=$request->matier;
                 $data1->save();
     
     }
             }
-            $emplois=$autorisations->emplois;
+            $emplois="ok";
 
             return response()->json($emplois);
 
 
         }
+//////////////////////////////////////////////////////////////////////////////////////////
+public function editemploi(Request $request,$id){
+    $data1 = Emploi::find($id);
+    $data1['jours']=$request->jours;
+    $data1['creneau_horaire']=$request->creneau_horaire;
+    $data1['heure_debut']=$request->heure_debut;
+    $data1['heure_fin']=$request->heure_fin;
+    $data1['section']=$request->section;
+    $data1['groupe']=$request->groupe;
+    $data1['type_emplois']=1;
+    $data1['type_intervention']=1;
+    $data1['matieres']=1;
+    $data1->update();
+    return response()->json($data1);
 
+}
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+public function getemploi($id){
+    $data = Emploi::find($id);
+    return response()->json($data);
+}
+
+
+///////////////////////////////////////////////////////////////////:
+public function getemplois($ref){
+    $autorisation = Autorisation::where('reference',$ref)->first();
+
+    $emp=$autorisation->emplois()->get();
+    return response()->json($emp);
+
+}
       
         
 
@@ -159,5 +195,71 @@ public function ajouterhouraire(Request $request){
             $data1->save();
             return response()->json($data1);
             
+}
+//////////////////////////////////////////////////////////////
+public function getpointage($id){
+    $autorisation = Autorisation::find($id);
+    
+    $emp=$autorisation->emplois()->get();
+    
+    return response()->json($emp);
+}
+////////////////////////////////////
+public function getheurses(Request $request){
+    $autorisation = Autorisation::where('reference',$request->ref)->first();
+    $i = 0;
+    $emp=$autorisation->emplois()->get();
+    foreach($emp as $data){
+        if(\Carbon\Carbon::parse($data['jours'])->format('M') == $request->moish){
+            $m = $data['heure_fin'] - $data['heure_debut'];
+            $i = $i +$m;
+        }
+       
+        
+    }
+    return response()->json($i);
+
+}
+public function deleteemploi($id){
+    $data = Emploi::find($id);
+    $data->delete();
+    return response()->json(['success' => 'Record deleted successfully!']);
+
+}
+/////////////////////////////////////////////////
+public function demande(){
+   $matiers= Matiere::all();
+    $emplois=Type_emploi::all();
+    $intervantions=Type_intervention::all();
+
+    return view('demande',compact('matiers','emplois','intervantions'));
+
+
+}
+/////////////////////////////////////////////////////
+public function pointer(Request $request){
+    $id = $request->id;
+    $data1 = Emploi::find($id);
+    $total = $request->total;
+    $data = new Pointage();
+    $data['jours']= $data1['jours'];
+    $data['creneau_horaire']= $data1['creneau_horaire'];
+    $data['heure_debut']=$data1['heure_debut'] ;
+    $data['heure_fin']=$data1['heure_fin'] ;
+    $data['total']=$total ;
+    $data['autorisation_id']=$data1['autorisation_id'] ;
+    $data->save();
+
+
+    return response()->json($data1);
+
+}
+///////////////////////////////////////////////////////////////////////////
+public function usermpsearch($cne){
+    $user = User::where('cne',$cne)->first();
+    $autorisations = $user->autorisations;
+    return response()->json($autorisations);
+
+  
 }
 }
